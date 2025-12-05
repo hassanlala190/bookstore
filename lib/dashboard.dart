@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'package:bookstore/dashboard.dart';
+import 'package:bookstore/drawer.dart';
 import 'package:bookstore/firebase_options.dart';
+import 'package:bookstore/login.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,13 +18,13 @@ void main() async{
   runApp(
   DevicePreview(
     enabled: !kReleaseMode,
-    builder: (context) => MyApp(), // Wrap your app
+    builder: (context) => dash(), // Wrap your app
   ),
 );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class dash extends StatelessWidget {
+  const dash({super.key});
 
   // This widget is the root of your application.
   @override
@@ -49,27 +50,20 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    Timer(
-     (Duration(seconds: 5)),
-     (){
-        Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (a)=>dash()));
-     });
-  }
-
+ 
   @override
   Widget build(BuildContext context) {
   
-    return Scaffold(
-      
-      body: Center(
-       child: Image.network("https://images.unsplash.com/photo-1511367461989-f85a21fda167?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D"
-        ),
-      ),
-    );
+   return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+     builder: (context, snap){
+      if(snap.hasData){
+        return drawer();
+      }
+      else{
+        return login();
+      }
+     },
+      );
   }
 }
