@@ -40,6 +40,9 @@ dependencies:
   device_preview:
   firebase_storage:
   image_picker: 
+  path_provider:
+  path:
+  flutter_image_compress:
 
 dev_dependencies:
   flutter_test:

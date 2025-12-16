@@ -1,156 +1,203 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 class AuthorEditPage extends StatefulWidget {
-  final String authorId;
-  final Map<String, dynamic> authorData;
+  final String docId;
+  final Map<String, dynamic> data;
 
-  AuthorEditPage({required this.authorId, required this.authorData});
+  AuthorEditPage({required this.docId, required this.data});
 
   @override
   _AuthorEditPageState createState() => _AuthorEditPageState();
 }
 
 class _AuthorEditPageState extends State<AuthorEditPage> {
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController contactController = TextEditingController();
-  final TextEditingController descriptionController = TextEditingController();
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  TextEditingController nameController = TextEditingController();
+  TextEditingController contactController = TextEditingController();
+  TextEditingController descriptionController = TextEditingController();
 
-  File? _newImage; // To store new image if selected
+  File? _selectedImage;
+  String? _webImageBase64;
   final ImagePicker _picker = ImagePicker();
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    // Set initial values from authorData
-    nameController.text = widget.authorData['name'];
-    contactController.text = widget.authorData['contact'];
-    descriptionController.text = widget.authorData['description'];
+    nameController.text = widget.data['name'];
+    contactController.text = widget.data['contact'];
+    descriptionController.text = widget.data['description'];
   }
 
-  // Function to pick a new image
+  void showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
+  }
+
   Future<void> _pickImage() async {
-    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _newImage = File(pickedFile.path);
-      });
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+      if (image == null) return;
+
+      if (kIsWeb) {
+        final bytes = await image.readAsBytes();
+        final compressed = await FlutterImageCompress.compressWithList(
+          bytes,
+          quality: 15,
+          minWidth: 300,
+          minHeight: 300,
+        );
+        setState(() {
+          _webImageBase64 = base64Encode(compressed);
+          _selectedImage = null;
+        });
+      } else {
+        File file = File(image.path);
+        final targetPath =
+            image.path.replaceFirst(RegExp(r'\.(jpg|jpeg|png)$'), '_compressed.jpg');
+        final compressedFile = await FlutterImageCompress.compressAndGetFile(
+          file.absolute.path,
+          targetPath,
+          quality: 15,
+        );
+        setState(() {
+          _selectedImage = File(compressedFile!.path);
+          _webImageBase64 = null;
+        });
+      }
+    } catch (e) {
+      showMessage("Image error: $e", isError: true);
     }
   }
 
-  // Function to upload the new image to Firebase Storage
-  Future<String?> _uploadImage(File image) async {
+  Future<String?> _saveImage() async {
+    if (kIsWeb) return _webImageBase64;
+
+    if (_selectedImage == null) return null;
+
     try {
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference storageReference = FirebaseStorage.instance.ref().child('authors/$fileName');
-      UploadTask uploadTask = storageReference.putFile(image);
-      TaskSnapshot snapshot = await uploadTask;
-      String downloadURL = await snapshot.ref.getDownloadURL();
-      return downloadURL;
+      final Directory appDocDir = await getApplicationDocumentsDirectory();
+      final Directory imagesDir = Directory('${appDocDir.path}/images');
+      if (!await imagesDir.exists()) await imagesDir.create(recursive: true);
+
+      String fileName = 'author_${DateTime.now().millisecondsSinceEpoch}'
+          '${path.extension(_selectedImage!.path)}';
+      String newPath = '${imagesDir.path}/$fileName';
+      await _selectedImage!.copy(newPath);
+
+      return 'images/$fileName';
     } catch (e) {
-      print("Image upload failed: $e");
+      showMessage("Save image failed: $e", isError: true);
       return null;
     }
   }
 
-  // Function to update author details in Firestore
-  Future<void> _updateAuthor() async {
-    // Check if fields are empty
-    if (nameController.text.isEmpty || contactController.text.isEmpty || descriptionController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("All fields are required")));
+  void _updateAuthor() async {
+    String name = nameController.text.trim();
+    String contact = contactController.text.trim();
+    String description = descriptionController.text.trim();
+    if (name.isEmpty || contact.isEmpty || description.isEmpty) {
+      showMessage("All fields required", isError: true);
       return;
     }
 
+    setState(() => _isSaving = true);
+    String? imageData = await _saveImage();
+
     try {
-      String? imageUrl;
-
-      if (_newImage != null) {
-        // If a new image is selected, upload it and get the URL
-        imageUrl = await _uploadImage(_newImage!);
-      } else {
-        // If no new image is selected, use the existing image URL
-        imageUrl = widget.authorData['image_url'];
-      }
-
-      // Update author data in Firestore
-      await FirebaseFirestore.instance.collection('Authors').doc(widget.authorId).update({
-        'name': nameController.text,
-        'contact': contactController.text,
-        'description': descriptionController.text,
-        'image_url': imageUrl,
+      await db.collection("authors").doc(widget.docId).update({
+        "name": name,
+        "contact": contact,
+        "description": description,
+        "image": imageData ?? widget.data['image'],
+        "is_web": kIsWeb,
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Author updated successfully")));
-      Navigator.pop(context); // Go back after updating
+      showMessage("Author updated!");
+      Navigator.pop(context);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error updating author")));
+      showMessage("Update error: $e", isError: true);
+    } finally {
+      setState(() => _isSaving = false);
     }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    contactController.dispose();
+    descriptionController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Edit Author"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Author Name field
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(labelText: 'Author Name'),
+      appBar: AppBar(title: Text("Edit Author")),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            if (kIsWeb && _webImageBase64 != null)
+              Image.memory(
+                base64Decode(_webImageBase64!),
+                height: 150,
+                fit: BoxFit.cover,
+              )
+            else if (!kIsWeb && _selectedImage != null)
+              Image.file(_selectedImage!, height: 150, fit: BoxFit.cover)
+            else if (widget.data['image'] != null)
+              kIsWeb && widget.data['is_web']
+                  ? Image.memory(base64Decode(widget.data['image']),
+                      height: 150, fit: BoxFit.cover)
+                  : Image.file(File(widget.data['image']),
+                      height: 150, fit: BoxFit.cover)
+            else
+              Container(
+                height: 150,
+                color: Colors.grey[300],
+                child: Center(child: Text("No image")),
               ),
-              SizedBox(height: 16),
-
-              // Author Contact field
-              TextField(
-                controller: contactController,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(labelText: 'Contact'),
-              ),
-              SizedBox(height: 16),
-
-              // Author Description field
-              TextField(
-                controller: descriptionController,
-                maxLines: 4,
-                decoration: InputDecoration(labelText: 'Description'),
-              ),
-              SizedBox(height: 16),
-
-              // Author Image display
-              Text("Author Image", style: TextStyle(fontSize: 16)),
-              SizedBox(height: 8),
-              _newImage == null
-                  ? widget.authorData['image_url'] != null
-                      ? Image.network(widget.authorData['image_url'], height: 150, width: 150, fit: BoxFit.cover)
-                      : Text("No image selected")
-                  : Image.file(_newImage!, height: 150, width: 150, fit: BoxFit.cover),
-
-              SizedBox(height: 16),
-
-              ElevatedButton.icon(
-                onPressed: _pickImage,
-                icon: Icon(Icons.image),
-                label: Text("Pick an image"),
-              ),
-
-              SizedBox(height: 20),
-
-              // Update button
-              ElevatedButton(
-                onPressed: _updateAuthor,
-                child: Text('Update Author'),
-              ),
-            ],
-          ),
+            SizedBox(height: 10),
+            ElevatedButton.icon(
+              icon: Icon(Icons.image),
+              label: Text("Change Image"),
+              onPressed: _pickImage,
+            ),
+            SizedBox(height: 10),
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: "Name"),
+            ),
+            TextField(
+              controller: contactController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(labelText: "Contact"),
+            ),
+            TextField(
+              controller: descriptionController,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: "Description"),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isSaving ? null : _updateAuthor,
+              child: _isSaving
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text("Update Author"),
+            ),
+          ],
         ),
       ),
     );

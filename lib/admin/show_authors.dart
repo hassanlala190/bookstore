@@ -1,151 +1,166 @@
+import 'dart:io';
+import 'dart:convert';
 import 'package:bookstore/admin/author_edit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class ShowAuthorsPage extends StatefulWidget {
+class ShowAuthorPage extends StatefulWidget {
   @override
-  _ShowAuthorsPageState createState() => _ShowAuthorsPageState();
+  _ShowAuthorPageState createState() => _ShowAuthorPageState();
 }
 
-class _ShowAuthorsPageState extends State<ShowAuthorsPage> {
-  // Fetch all authors from Firestore
-  Future<List<DocumentSnapshot>> _fetchAuthors() async {
-    var querySnapshot = await FirebaseFirestore.instance.collection("Authors").get();
-    return querySnapshot.docs;
+class _ShowAuthorPageState extends State<ShowAuthorPage> {
+  FirebaseFirestore db = FirebaseFirestore.instance;
+
+  void showMessage(String message, {bool isError = false}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: isError ? Colors.red : Colors.green,
+      ),
+    );
   }
 
-  // Function to delete an author
-  Future<void> _deleteAuthor(String authorId) async {
-    try {
-      await FirebaseFirestore.instance.collection('Authors').doc(authorId).delete();
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Author deleted successfully")));
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error deleting author")));
+  void _deleteAuthor(DocumentSnapshot doc) async {
+    bool confirm = await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text("Delete Author?"),
+        content: Text("Are you sure you want to delete '${doc['name']}'?"),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text("Cancel")),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text("Delete")),
+        ],
+      ),
+    );
+    if (confirm) {
+      try {
+        await db.collection("authors").doc(doc.id).delete();
+        showMessage("Author deleted!");
+      } catch (e) {
+        showMessage("Delete error: $e", isError: true);
+      }
     }
   }
 
-  // Function to show delete confirmation dialog
-  void _showDeleteDialog(String authorId) {
+  void _showFullDescription(String name, String description) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text('Are you sure?'),
-          content: Text('Do you really want to delete this author?'),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                _deleteAuthor(authorId);
-                Navigator.pop(context); // Close the dialog
-              },
-              child: Text('OK'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: Text(name),
+        content: SingleChildScrollView(
+          child: Text(description),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text("Close")),
+        ],
+      ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Authors List"),
-      ),
-      body: FutureBuilder<List<DocumentSnapshot>>(
-        future: _fetchAuthors(),
+      appBar: AppBar(title: Text("Authors List")),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: db
+            .collection("authors")
+            .orderBy("created_at", descending: true)
+            .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
+          if (snapshot.connectionState == ConnectionState.waiting)
             return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No authors available."));
-          } else {
-            // List of authors
-            List<DocumentSnapshot> authors = snapshot.data!;
 
-            return ListView.builder(
-              itemCount: authors.length,
-              itemBuilder: (context, index) {
-                var author = authors[index].data() as Map<String, dynamic>;
-                String authorId = authors[index].id;  // Get the author ID from Firestore
-                String authorName = author['name'];
-                String authorContact = author['contact'];
-                String authorDescription = author['description'];
-                String authorImage = author['image_url'];
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty)
+            return Center(child: Text("No authors found"));
 
-                return Card(
-                  margin: EdgeInsets.all(10),
-                  elevation: 5,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      children: [
-                        // Author image
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: Image.network(
-                            authorImage,
-                            width: 100,
-                            height: 100,
-                            fit: BoxFit.cover,
-                          ),
+          return ListView(
+            children: snapshot.data!.docs.map((doc) {
+              var data = doc.data() as Map<String, dynamic>;
+              return Card(
+                margin: EdgeInsets.all(8),
+                child: ListTile(
+                  leading: kIsWeb && data['is_web'] == true
+                      ? (data['image'] != null
+                          ? Image.memory(
+                              base64Decode(data['image']),
+                              width: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Icon(Icons.person))
+                      : (data['image'] != null
+                          ? Image.file(
+                              File(data['image']),
+                              width: 50,
+                              fit: BoxFit.cover,
+                            )
+                          : Icon(Icons.person)),
+                  title: Text("Name: ${data['name'] ?? ""}"),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (data['contact'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: Text("Contact: ${data['contact']}"),
                         ),
-                        SizedBox(width: 10),
-                        // Author details
-                        Expanded(
+                      if (data['description'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                authorName,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SizedBox(height: 5),
-                              Text("Contact: $authorContact"),
-                              SizedBox(height: 5),
-                              Text(
-                                "Description: $authorDescription",
+                                "Description: ${data['description']!}",
                                 maxLines: 3,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                              GestureDetector(
+                                onTap: () => _showFullDescription(
+                                    data['name'] ?? "Author",
+                                    data['description']!),
+                                child: Text(
+                                  "Read More",
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.bold),
+                                ),
                               ),
                             ],
                           ),
                         ),
-                        // Edit and Delete buttons
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            // Navigate to edit page
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (context) => AuthorEditPage(authorId: authorId, authorData: author)),
-                            );
-                          },
-                        ),
-                        IconButton(
-                          icon: Icon(Icons.delete),
-                          onPressed: () {
-                            _showDeleteDialog(authorId);
-                          },
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                );
-              },
-            );
-          }
+                  isThreeLine: true,
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                          icon: Icon(Icons.edit, color: Colors.blue),
+                          onPressed: () {
+                            Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AuthorEditPage(
+                                      docId: doc.id, data: data),
+                                ));
+                          }),
+                      IconButton(
+                          icon: Icon(Icons.delete, color: Colors.red),
+                          onPressed: () => _deleteAuthor(doc)),
+                    ],
+                  ),
+                ),
+              );
+            }).toList(),
+          );
         },
       ),
     );
