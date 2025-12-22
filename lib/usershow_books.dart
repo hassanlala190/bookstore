@@ -1,5 +1,8 @@
+
+
 import 'dart:io';
 import 'dart:convert';
+import 'package:bookstore/BookDetails.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -174,7 +177,13 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
                         ),
                         ElevatedButton(
                           onPressed: () {
-                            _showBookDetails(data);
+                           Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => BookDetailsPage(data: data),
+      ),
+    );
+                            // _showBookDetails(data);
                           },
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
@@ -254,85 +263,7 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
   }
   
   // Show book details dialog
-  void _showBookDetails(Map<String, dynamic> data) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(data['bookName'] ?? "Book Details"),
-        content: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Book Image
-              Container(
-                height: 200,
-                width: double.infinity,
-                child: _buildBookImage(data),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              
-              SizedBox(height: 16),
-              
-              // Book Details
-              _buildDetailRow("Author:", data['bookAuthor'] ?? "Unknown"),
-              _buildDetailRow("Category:", data['bookCategory'] ?? "Unknown"),
-              _buildDetailRow("Language:", data['bookLanguage'] ?? "English"),
-              _buildDetailRow("Price:", "₹${data['bookPrice']?.toStringAsFixed(2) ?? "0.00"}"),
-              _buildDetailRow("Stock:", data['bookStock'] == "Yes" ? "In Stock" : "Out of Stock"),
-              
-              SizedBox(height: 16),
-              
-              // Description
-              Text(
-                "Description:",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              SizedBox(height: 8),
-              Text(
-                data['bookDescription'] ?? "No description available",
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text("Close"),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Add to cart functionality here
-              Navigator.pop(context);
-            },
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-            ),
-            child: Text("Add to Cart"),
-          ),
-        ],
-      ),
-    );
-  }
-  
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Text(
-            label,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          SizedBox(width: 8),
-          Expanded(child: Text(value)),
-        ],
-      ),
-    );
-  }
+ 
   
   // Filter dialog
   void _showFilterDialog() {
