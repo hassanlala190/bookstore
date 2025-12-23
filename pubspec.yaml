@@ -43,6 +43,7 @@ dependencies:
   path_provider:
   path:
   flutter_image_compress:
+  shared_preferences:
 
 dev_dependencies:
   flutter_test:

@@ -3,6 +3,8 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:bookstore/BookDetails.dart';
+import 'package:bookstore/cart_Service.dart';
+import 'package:bookstore/cart_page.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -495,15 +497,65 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Book Catalog"),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.filter_list),
-            onPressed: _showFilterDialog,
-            tooltip: "Filters",
-          ),
-        ],
-      ),
+  title: Text("Book Catalog"),
+  actions: [
+    // Cart Icon with badge
+    FutureBuilder<int>(
+      future: CartService.getCartCount(),
+      builder: (context, snapshot) {
+        int count = snapshot.data ?? 0;
+        return Stack(
+          alignment: Alignment.topRight,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.shopping_cart),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const CartPage()),
+                );
+              },
+              tooltip: "My Cart",
+            ),
+            if (count > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 18,
+                    minHeight: 18,
+                  ),
+                  child: Text(
+                    '$count',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    ),
+
+    // Filter Icon
+    IconButton(
+      icon: Icon(Icons.filter_list),
+      onPressed: _showFilterDialog,
+      tooltip: "Filters",
+    ),
+  ],
+),
+
       body: Column(
         children: [
           // Search Bar and Price Filter
