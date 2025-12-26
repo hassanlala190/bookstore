@@ -2,9 +2,11 @@ import 'dart:async';
 import 'package:bookstore/admin/add_author.dart';
 import 'package:bookstore/admin/add_book.dart';
 import 'package:bookstore/admin/admin_dashboard.dart';
+import 'package:bookstore/admin/admin_login.dart';
 import 'package:bookstore/admin/show_authors.dart';
 import 'package:bookstore/dashboard.dart';
 import 'package:bookstore/firebase_options.dart';
+import 'package:bookstore/login.dart';
 import 'package:bookstore/usershow_books.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -62,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
      (Duration(seconds: 5)),
      (){
         Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (a)=>UserShowBooksPage()));
+        MaterialPageRoute(builder: (a)=>login()));
      });
   }
 

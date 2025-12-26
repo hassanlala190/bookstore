@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:bookstore/attractive_dashboard.dart';
 import 'package:bookstore/dashboard.dart';
 import 'package:bookstore/firebase_options.dart';
 import 'package:bookstore/forget.dart';
@@ -6,7 +7,6 @@ import 'package:bookstore/register.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -87,13 +87,12 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       else{
         show_msg("Login Successfully");
-        Navigator.push(context, MaterialPageRoute(builder: (a)=>dash()));
+        Navigator.push(context, MaterialPageRoute(builder: (a)=>AttractiveDashboard()));
       }
 
       // Email Sent
-      await userdata.user?.sendEmailVerification();
       show_msg(
-        "User Registered Successfully, Verification email has been sent",
+        "User Login Successfully"
       );
 
       //fields empty

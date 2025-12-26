@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:bookstore/cart_Service.dart';
+import 'package:bookstore/checkout_page.dart';
 import 'package:flutter/material.dart';
 
 class CartPage extends StatefulWidget {
@@ -216,9 +217,18 @@ class _CartPageState extends State<CartPage> {
                               const SnackBar(content: Text("Cart is empty")),
                             );
                           } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Proceeding to checkout...")),
-                            );
+                            
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => CheckoutPage(
+        cartItems: cartItems,
+        totalAmount: getTotalPrice(),
+      ),
+    ),
+  );
+
+
                           }
                         },
                         style: ElevatedButton.styleFrom(

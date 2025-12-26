@@ -44,6 +44,8 @@ dependencies:
   path:
   flutter_image_compress:
   shared_preferences:
+  pdf:
+  printing:
 
 dev_dependencies:
   flutter_test:
