@@ -64,7 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
      (Duration(seconds: 5)),
      (){
         Navigator.pushReplacement(context,
-        MaterialPageRoute(builder: (a)=>login()));
+        MaterialPageRoute(builder: (a)=>AdminLoginPage()));
      });
   }
 

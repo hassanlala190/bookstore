@@ -1,4 +1,5 @@
 import 'package:bookstore/admin/admin_order_page.dart';
+import 'package:bookstore/admin/all_users.dart';
 import 'package:flutter/material.dart';
 
 // Pages
@@ -29,9 +30,12 @@ class AdminDrawer extends StatelessWidget {
             _item(context, Icons.dashboard, "Dashboard", null),
             _divider(),
 
+            _item(context, Icons.person_add, "Users", AdminUsersPage()),
+            _item(context, Icons.people, "User Orders", AdminOrdersPage()),
+            _divider(),
+
             _item(context, Icons.person_add, "Add Author", AddAuthorPage()),
             _item(context, Icons.people, "Show Authors", ShowAuthorPage()),
-
             _divider(),
 
             _item(context, Icons.book, "Add Book", AddBookPage()),
@@ -41,7 +45,6 @@ class AdminDrawer extends StatelessWidget {
 
             _item(context, Icons.category, "Add Category", AddCategoryPage()),
             _item(context, Icons.list_alt, "Show Categories", ShowCategoryPage()),
-            _item(context, Icons.list_alt, "Orders List", AdminOrdersPage()),
 
             _divider(),
 

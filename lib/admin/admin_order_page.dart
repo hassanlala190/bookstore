@@ -19,7 +19,10 @@ class AdminOrdersPage extends StatelessWidget {
     await FirebaseFirestore.instance
         .collection('orders')
         .doc(orderId)
-        .update({'status': status});
+        .update({
+      'status': status,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   @override
@@ -39,95 +42,53 @@ class AdminOrdersPage extends StatelessWidget {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (snapshot.data!.docs.isEmpty) {
+          final orders = snapshot.data!.docs;
+
+          if (orders.isEmpty) {
             return const Center(child: Text("No orders found"));
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(12),
-            itemCount: snapshot.data!.docs.length,
+            itemCount: orders.length,
             itemBuilder: (context, index) {
-              final doc = snapshot.data!.docs[index];
+              final doc = orders[index];
               final data = doc.data() as Map<String, dynamic>;
 
               return Card(
                 margin: const EdgeInsets.only(bottom: 12),
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
                 child: Padding(
                   padding: const EdgeInsets.all(12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // HEADER
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            data['name'],
+                            data['name'] ?? '',
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                fontWeight: FontWeight.bold),
                           ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: statusColor(data['status'])
-                                  .withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
+                          Chip(
+                            label: Text(
                               data['status'].toString().toUpperCase(),
                               style: TextStyle(
-                                color: statusColor(data['status']),
-                                fontWeight: FontWeight.bold,
-                              ),
+                                  color: statusColor(data['status'])),
                             ),
+                            backgroundColor:
+                                statusColor(data['status']).withOpacity(0.2),
                           ),
                         ],
                       ),
-
-                      const SizedBox(height: 6),
                       Text("Email: ${data['email']}"),
-                      Text("Phone: ${data['phone']}"),
                       Text("Tracking: ${data['trackingNumber']}"),
-
-                      const SizedBox(height: 6),
                       Text(
                         "Total: Rs ${data['totalAmount']}",
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.deepPurple,
-                        ),
+                            fontWeight: FontWeight.bold),
                       ),
-
-                      const Divider(height: 20),
-
-                      // ITEMS
-                      const Text(
-                        "Items:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 6),
-
-                      ...List.generate(
-                        (data['items'] as List).length,
-                        (i) {
-                          final item = data['items'][i];
-                          return Text(
-                            "• ${item['bookName']}  x${item['quantity']}",
-                            style: const TextStyle(fontSize: 13),
-                          );
-                        },
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // ACTION BUTTONS
+                      const Divider(),
                       if (data['status'] == 'pending')
                         Row(
                           children: [
@@ -135,9 +96,6 @@ class AdminOrdersPage extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: () =>
                                     updateStatus(doc.id, 'approved'),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green,
-                                ),
                                 child: const Text("Approve"),
                               ),
                             ),
@@ -147,8 +105,7 @@ class AdminOrdersPage extends StatelessWidget {
                                 onPressed: () =>
                                     updateStatus(doc.id, 'rejected'),
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
-                                ),
+                                    backgroundColor: Colors.red),
                                 child: const Text("Reject"),
                               ),
                             ),
