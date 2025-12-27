@@ -1,5 +1,7 @@
 import 'dart:math';
+import 'package:bookstore/attractive_dashboard.dart';
 import 'package:bookstore/cart_Service.dart';
+import 'package:bookstore/dashboard.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -74,7 +76,8 @@ class _CheckoutPageState extends State<CheckoutPage> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (BuildContext con) {
+        return AlertDialog(
         title: const Text("Order Confirmed 🎉"),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -101,13 +104,19 @@ class _CheckoutPageState extends State<CheckoutPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Navigator.pop(context); // close dialog
-              Navigator.pop(context); // go back from checkout
+             Navigator.pop(con); // close dialog
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => AttractiveDashboard()),
+      (route) => false, // saari previous screens remove
+    );
             },
             child: const Text("OK"),
           ),
         ],
-      ),
+      );
+      }
     );
   }
 

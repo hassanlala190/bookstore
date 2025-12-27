@@ -500,52 +500,52 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
   title: Text("Book Catalog"),
   actions: [
     // Cart Icon with badge
-    FutureBuilder<int>(
-      future: CartService.getCartCount(),
-      builder: (context, snapshot) {
-        int count = snapshot.data ?? 0;
-        return Stack(
-          alignment: Alignment.topRight,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.shopping_cart),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const CartPage()),
-                );
-              },
-              tooltip: "My Cart",
-            ),
-            if (count > 0)
-              Positioned(
-                right: 6,
-                top: 6,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 18,
-                    minHeight: 18,
-                  ),
-                  child: Text(
-                    '$count',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+   ValueListenableBuilder<int>(
+  valueListenable: CartService.cartCountNotifier,
+  builder: (context, count, _) {
+    return Stack(
+      alignment: Alignment.topRight,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.shopping_cart),
+          tooltip: "My Cart",
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const CartPage()),
+            );
+          },
+        ),
+        if (count > 0)
+          Positioned(
+            right: 6,
+            top: 6,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(10),
               ),
-          ],
-        );
-      },
-    ),
+              constraints: const BoxConstraints(
+                minWidth: 18,
+                minHeight: 18,
+              ),
+              child: Text(
+                '$count',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ),
+      ],
+    );
+  },
+),
+
 
     // Filter Icon
     IconButton(

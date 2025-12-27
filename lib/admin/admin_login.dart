@@ -1,4 +1,5 @@
 import 'package:bookstore/admin/admin_dashboard.dart';
+import 'package:bookstore/login.dart';
 import 'package:flutter/material.dart'; // Aapka admin dashboard ya home page
 
 class AdminLoginPage extends StatefulWidget {
@@ -78,6 +79,18 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
               ElevatedButton(
                 onPressed: loginAdmin,
                 child: Text("Login"),
+                style: ElevatedButton.styleFrom(
+                  minimumSize: Size(double.infinity, 50),
+                ),
+              ),
+              TextButton(
+                onPressed: (){
+                Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => login()), // Admin Dashboard
+      );
+                },
+                child: Text(" Go to User Login"),
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(double.infinity, 50),
                 ),

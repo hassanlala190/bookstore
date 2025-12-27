@@ -1,7 +1,7 @@
+import 'package:bookstore/login.dart';
 import 'package:bookstore/my_orders_page.dart';
 import 'package:flutter/material.dart';
 import 'package:bookstore/usershow_books.dart';
-import 'package:bookstore/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class AttractiveDashboard extends StatefulWidget {
@@ -1329,7 +1329,7 @@ class _AttractiveDashboardState extends State<AttractiveDashboard> {
                 FirebaseAuth.instance.signOut();
                 Navigator.pushAndRemoveUntil(
                   context,
-                  MaterialPageRoute(builder: (context) => login()),
+                  MaterialPageRoute(builder: (_) => login()),
                   (route) => false,
                 );
               },

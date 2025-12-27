@@ -6,23 +6,36 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'cart_page.dart';
 
-class BookDetailsPage extends StatelessWidget {
+class BookDetailsPage extends StatefulWidget {
   final Map<String, dynamic> data;
 
   const BookDetailsPage({Key? key, required this.data}) : super(key: key);
 
   @override
+  State<BookDetailsPage> createState() => _BookDetailsPageState();
+}
+
+class _BookDetailsPageState extends State<BookDetailsPage> {
+
+  @override
+  void initState() {
+    super.initState();
+    CartService.loadInitialCartCount();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final data = widget.data;
+
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: Text(data['bookName'] ?? "Book Details"),
         backgroundColor: Colors.deepPurple,
         actions: [
-          FutureBuilder<int>(
-            future: CartService.getCartCount(),
-            builder: (context, snapshot) {
-              int count = snapshot.data ?? 0;
+          ValueListenableBuilder<int>(
+            valueListenable: CartService.cartCountNotifier,
+            builder: (context, count, _) {
               return Stack(
                 alignment: Alignment.topRight,
                 children: [
@@ -45,7 +58,10 @@ class BookDetailsPage extends StatelessWidget {
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                        constraints: const BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
                         child: Text(
                           '$count',
                           style: const TextStyle(
@@ -63,7 +79,7 @@ class BookDetailsPage extends StatelessWidget {
           ),
         ],
       ),
-      body: SingleChildScrollView(
+     body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
