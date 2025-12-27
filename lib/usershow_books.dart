@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:bookstore/BookDetails.dart';
 import 'package:bookstore/cart_Service.dart';
 import 'package:bookstore/cart_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -71,7 +72,7 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
     }
   }
   
-  // Build book card widget
+//   // Build book card widget
   Widget _buildBookCard(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     
@@ -95,118 +96,125 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
               child: _buildBookImage(data),
             ),
             
-            // Book Details
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Book Title
-                    Text(
-                      data['bookName'] ?? "No Title",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      maxLines: 1,
-                    ),
-                    
-                    SizedBox(height: 4),
-                    
-                    // Author
-                    Text(
-                      "Author: ${data['bookAuthor'] ?? "Unknown"}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    
-                    // Category
-                    Text(
-                      "Category: ${data['bookCategory'] ?? "Unknown"}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                    
-                    // Language
-                    Text(
-                      "Language: ${data['bookLanguage'] ?? "English"}",
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    
-                    // Stock Status
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: data['bookStock'] == "Yes" ? Colors.green[100] : Colors.red[100],
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        data['bookStock'] == "Yes" ? "In Stock" : "Out of Stock",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: data['bookStock'] == "Yes" ? Colors.green[800] : Colors.red[800],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    
-                    Spacer(),
-                    
-                    // Price and Action Button
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "₹${data['bookPrice']?.toStringAsFixed(2) ?? "0.00"}",
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.blue[800],
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                           Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => BookDetailsPage(data: data),
-      ),
-    );
-                            // _showBookDetails(data);
-                          },
-                          style: ButtonStyle(
-                            backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                            padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                              EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                            ),
-                          ),
-                          child: Text("View Details"),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+Expanded(
+  child: Padding(
+    padding: EdgeInsets.all(12),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Book Title (Clickable)
+        InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BookDetailsPage(data: data, docId: doc.id, ),
               ),
+            );
+          },
+          child: Text(
+            data['bookName']?.toString() ?? "No Title",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[800],
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
+        ),
+        SizedBox(height: 4),
+
+        // Author
+        Text(
+          "Author: ${data['bookAuthor']?.toString() ?? "Unknown"}",
+          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+
+        // Category
+        Text(
+          "Category: ${data['bookCategory']?.toString() ?? "Unknown"}",
+          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 1,
+        ),
+
+        // Language
+        Text(
+          "Language: ${data['bookLanguage']?.toString() ?? "English"}",
+          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+        ),
+        SizedBox(height: 6),
+
+        // Stock Status
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: data['bookStock']?.toString() == "Yes"
+                ? Colors.green[100]
+                : Colors.red[100],
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            data['bookStock']?.toString() == "Yes"
+                ? "In Stock"
+                : "Out of Stock",
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: data['bookStock']?.toString() == "Yes"
+                  ? Colors.green[800]
+                  : Colors.red[800],
+            ),
+          ),
+        ),
+
+        Spacer(),
+
+        // Responsive Price + Wishlist Row
+        LayoutBuilder(
+          builder: (context, constraints) {
+            bool smallWidth = constraints.maxWidth < 250;
+
+            return Wrap(
+              alignment: WrapAlignment.spaceBetween,
+              runSpacing: 6,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                // Price
+                Text(
+                  "₹${(data['bookPrice'] as num?)?.toStringAsFixed(2) ?? "0.00"}",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[800],
+                  ),
+                ),
+
+                // Wishlist Button
+               
+              ],
+            );
+          },
+        ),
+      ],
+    ),
+  ),
+),
+
+
+
           ],
         ),
       ),
     );
   }
-  
+
+
+ 
+
   // Build book image widget
   Widget _buildBookImage(Map<String, dynamic> data) {
     if (kIsWeb && data['is_web'] == true && data['bookCoverImage'] != null && data['bookCoverImage']!.isNotEmpty) {
@@ -266,6 +274,7 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
   
   // Show book details dialog
  
+
   
   // Filter dialog
   void _showFilterDialog() {

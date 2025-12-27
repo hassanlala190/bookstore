@@ -1,3 +1,4 @@
+import 'package:bookstore/ShowWishList.dart';
 import 'package:bookstore/login.dart';
 import 'package:bookstore/my_orders_page.dart';
 import 'package:flutter/material.dart';
@@ -1305,10 +1306,11 @@ class _AttractiveDashboardState extends State<AttractiveDashboard> {
               leading: Icon(Icons.favorite, color: Colors.deepPurple),
               title: Text('Wishlist'),
               onTap: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Wishlist page coming soon!')),
-                );
+                // Navigator.pop(context);
+                 Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const WishlistPage()),
+              );
               },
             ),
             ListTile(
