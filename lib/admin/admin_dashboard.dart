@@ -1,3 +1,4 @@
+import 'package:bookstore/admin/OrderHistory.dart';
 import 'package:flutter/material.dart';
 import 'admin_drawer.dart';
 import 'add_author.dart';
@@ -43,7 +44,7 @@ class AdminDashboard extends StatelessWidget {
               context,
               "Manage Store",
               Icons.settings,
-              null,
+              OrdersHistoryPage(),
             ),
           ],
         ),
