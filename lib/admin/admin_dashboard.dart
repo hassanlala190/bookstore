@@ -1,4 +1,5 @@
 import 'package:bookstore/admin/OrderHistory.dart';
+import 'package:bookstore/admin/TopBooks.dart';
 import 'package:flutter/material.dart';
 import 'admin_drawer.dart';
 import 'add_author.dart';
@@ -46,6 +47,13 @@ class AdminDashboard extends StatelessWidget {
               Icons.settings,
               OrdersHistoryPage(),
             ),
+            _dashboardCard(
+              context,
+              "Top Books",
+              Icons.sell,
+              TopBooksPage(),
+            ),
+
           ],
         ),
       ),

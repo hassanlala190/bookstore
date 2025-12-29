@@ -49,6 +49,7 @@ dependencies:
   open_filex:
   excel: 
   share_plus:
+  cloud_functions:
 
 dev_dependencies:
   flutter_test:
