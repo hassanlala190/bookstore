@@ -12,9 +12,13 @@ import 'cart_page.dart';
 
 class BookDetailsPage extends StatefulWidget {
   final Map<String, dynamic> data;
-final String docId; // <-- Add this
+  final String docId;
 
-  const BookDetailsPage({Key? key, required this.data, required this.docId}) : super(key: key);
+  const BookDetailsPage({
+    Key? key,
+    required this.data,
+    required this.docId,
+  }) : super(key: key);
 
   @override
   State<BookDetailsPage> createState() => _BookDetailsPageState();
@@ -23,52 +27,107 @@ final String docId; // <-- Add this
 class _BookDetailsPageState extends State<BookDetailsPage> {
   final String? userId = FirebaseAuth.instance.currentUser?.uid;
 
+  int _rating = 0;
+  final TextEditingController _reviewController = TextEditingController();
+
   @override
   void initState() {
     super.initState();
     CartService.loadInitialCartCount();
-    print(widget.docId);
   }
 
-  // ---------------- ADD TO WISHLIST ----------------
- Future<void> _addToWishlist(Map<String, dynamic> data) async {
-  final String? userId = FirebaseAuth.instance.currentUser?.uid;
-
-  if (userId == null) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text("Please login first")),
+  // ---------------- OPEN REVIEW DIALOG ----------------
+  void _openReviewDialog() {
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text("Write Review"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(5, (i) {
+                  return IconButton(
+                    icon: Icon(
+                      i < _rating ? Icons.star : Icons.star_border,
+                      color: Colors.amber,
+                    ),
+                    onPressed: () {
+                      setState(() => _rating = i + 1);
+                    },
+                  );
+                }),
+              ),
+              TextField(
+                controller: _reviewController,
+                maxLines: 3,
+                decoration:
+                    const InputDecoration(hintText: "Write your review"),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () => _submitReview(dialogContext),
+              child: const Text("Submit"),
+            ),
+          ],
+        );
+      },
     );
-    return;
   }
 
-  final ref = FirebaseFirestore.instance
-      .collection('wishlist')
-      .doc(userId)
-      .collection('items')
-      .doc(widget.docId);
+  // ---------------- SUBMIT REVIEW ----------------
+  Future<void> _submitReview(BuildContext dialogContext) async {
+    if (userId == null) return;
 
-  try {
-    final doc = await ref.get();
-    if (!doc.exists) {
-      await ref.set({
-        "bookId": widget.docId,
-        "bookName": data['bookName'] ?? "",
-        "bookPrice": data['bookPrice'] ?? "",
-        "bookCoverImage": data['bookCoverImage'] ?? "",
-        "createdAt": FieldValue.serverTimestamp(),
-      });
+    if (_rating == 0 || _reviewController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Added to Wishlist")),
+        const SnackBar(content: Text("Please add rating & review")),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Already in Wishlist")),
-      );
+      return;
     }
-  } catch (e) {
-    debugPrint("Wishlist error: $e");
+
+    await FirebaseFirestore.instance.collection('reviews').add({
+      'bookId': widget.docId,
+      'userId': userId,
+      'rating': _rating,
+      'description': _reviewController.text,
+      'createdAt': FieldValue.serverTimestamp(), // null-safe
+    });
+
+    _rating = 0;
+    _reviewController.clear();
+
+    Navigator.pop(dialogContext);
+
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Review added successfully")),
+    );
   }
-}
+
+  // ---------------- STAR WIDGET ----------------
+  Widget _stars(double rating) {
+    return Row(
+      children: List.generate(5, (i) {
+        if (i + 1 <= rating) {
+          return const Icon(Icons.star, color: Colors.amber, size: 18);
+        } else if (i + 0.5 <= rating) {
+          return const Icon(Icons.star_half, color: Colors.amber, size: 18);
+        } else {
+          return const Icon(Icons.star_border, size: 18);
+        }
+      }),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -77,271 +136,208 @@ class _BookDetailsPageState extends State<BookDetailsPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text(data['bookName'] ?? "Book Details"),
+        title: Text(data['bookName']),
         backgroundColor: Colors.deepPurple,
         actions: [
           ValueListenableBuilder<int>(
             valueListenable: CartService.cartCountNotifier,
-            builder: (context, count, _) {
-              return Stack(
-                alignment: Alignment.topRight,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.shopping_cart),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const CartPage(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (count > 0)
-                    Positioned(
-                      right: 6,
-                      top: 6,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 18,
-                          minHeight: 18,
-                        ),
-                        child: Text(
-                          '$count',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+            builder: (_, count, __) => Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.shopping_cart),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CartPage(),
+                      ),
+                    );
+                  },
+                ),
+                if (count > 0)
+                  Positioned(
+                    right: 6,
+                    top: 6,
+                    child: CircleAvatar(
+                      radius: 9,
+                      backgroundColor: Colors.red,
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                            fontSize: 11, color: Colors.white),
                       ),
                     ),
-                ],
-              );
-            },
-          ),
+                  )
+              ],
+            ),
+          )
         ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Book Image
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  )
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: SizedBox(
-                  height: 250,
-                  width: double.infinity,
-                  child: _buildBookImage(data),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
+            SizedBox(height: 250, child: _buildBookImage(data)),
+            const SizedBox(height: 15),
 
-            // Details Card
-            Container(
+            _detail("Author", data['bookAuthor']),
+            _detail("Category", data['bookCategory']),
+            _detail("Language", data['bookLanguage']),
+            _detail("Price", "₹${data['bookPrice']}"),
+            _detail(
+              "Stock",
+              data['bookStock'] == "Yes" ? "In Stock" : "Out of Stock",
+            ),
+
+            const SizedBox(height: 10),
+            Text(data['bookDescription'] ?? ""),
+
+            const SizedBox(height: 20),
+
+            SizedBox(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  )
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _detail("Author", data['bookAuthor']),
-                  _detail("Category", data['bookCategory']),
-                  _detail("Language", data['bookLanguage']),
-                  _detail("Price", "₹${data['bookPrice']}"),
-                  _detail(
-                    "Stock",
-                    data['bookStock'] == "Yes" ? "In Stock" : "Out of Stock",
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    "Description",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.deepPurple,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    data['bookDescription'] ?? "No description available",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                    Text(
-                     data["id"]?? "No description available",
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey,
-                    ),
-                  ),
-                ],
+              child: ElevatedButton.icon(
+                icon: const Icon(Icons.rate_review),
+                label: const Text("Write Review"),
+                onPressed: _openReviewDialog,
               ),
             ),
-            const SizedBox(height: 30),
 
-          // ---------------- ADD TO CART + WISHLIST ----------------
-Row(
-  children: [
-    // Add to Cart Button
-    Expanded(
-      flex: 3,
-      child: SizedBox(
-        height: 50,
-        child: ElevatedButton.icon(
-          icon: const Icon(Icons.shopping_cart),
-          label: const Text(
-            "Add to Cart",
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          onPressed: data['bookStock'] == "Yes"
-              ? () async {
-                  final cartList = await CartService.getCart();
-                  bool alreadyInCart =
-                      cartList.any((item) => item['id'] == data['id']);
+            const SizedBox(height: 25),
 
-                  if (alreadyInCart) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text("Book already in cart"),
-                      ),
-                    );
-                    return;
-                  }
-
-                  final cartItem = {
-                    "uuid":
-                        DateTime.now().millisecondsSinceEpoch.toString(),
-                    "id": data['id'],
-                    "bookName": data['bookName'],
-                    "bookPrice": data['bookPrice'],
-                    "bookCoverImage": data['bookCoverImage'] ?? "",
-                    "quantity": 1,
-                  };
-
-                  await CartService.addToCart(cartItem);
-
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text("Book added to cart"),
-                    ),
-                  );
+            // ---------------- AVERAGE RATING ----------------
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reviews')
+                  .where('bookId', isEqualTo: widget.docId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+                  return const Text("No ratings yet");
                 }
-              : null, // disabled if out of stock
-          style: ElevatedButton.styleFrom(
-            backgroundColor: data['bookStock'] == "Yes"
-                ? Colors.deepPurple
-                : Colors.grey, // color change
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
+
+                double avg = snapshot.data!.docs
+                        .map((e) => e['rating'] as int)
+                        .reduce((a, b) => a + b) /
+                    snapshot.data!.docs.length;
+
+                return Row(
+                  children: [
+                    _stars(avg),
+                    const SizedBox(width: 8),
+                    Text(avg.toStringAsFixed(1)),
+                  ],
+                );
+              },
             ),
-          ),
-        ),
-      ),
-    ),
 
-    const SizedBox(width: 12),
+            const SizedBox(height: 20),
+            const Text(
+              "Reviews",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
 
-    // Wishlist Button
-    SizedBox(
-      height: 50,
-      child: OutlinedButton.icon(
-        onPressed: () {
-          _addToWishlist(data); // aapki existing wishlist function
-        },
-        icon: const Icon(Icons.favorite_border, color: Colors.redAccent),
-        label: const Text(
-          "Wishlist",
-          style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
-        ),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Colors.redAccent),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      ),
-    ),
-  ],
-),
+            // ---------------- REVIEWS WITH REAL USER NAME ----------------
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('reviews')
+                  .where('bookId', isEqualTo: widget.docId)
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return const CircularProgressIndicator();
+                }
 
+                if (snapshot.data!.docs.isEmpty) {
+                  return const Text("No reviews yet");
+                }
+
+                // Sort locally by createdAt descending
+                List docs = snapshot.data!.docs.toList();
+                docs.sort((a, b) {
+                  Timestamp ta = a['createdAt'] ?? Timestamp(0, 0);
+                  Timestamp tb = b['createdAt'] ?? Timestamp(0, 0);
+                  return tb.compareTo(ta); // descending
+                });
+
+                return Column(
+                  children: docs.map((doc) {
+                    final review = doc.data() as Map<String, dynamic>;
+                    final reviewUserId = review['userId'];
+
+                    return FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('users')
+                          .doc(reviewUserId)
+                          .get(),
+                      builder: (context, userSnap) {
+                        String userName = "User";
+
+                        if (userSnap.hasData && userSnap.data!.exists) {
+                          userName = userSnap.data!['name'] ?? "User";
+                        }
+
+                        return Card(
+                          child: ListTile(
+                            leading: const CircleAvatar(
+                              backgroundColor: Colors.deepPurple,
+                              child:
+                                  Icon(Icons.person, color: Colors.white),
+                            ),
+                            title: Row(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(userName),
+                                Row(
+                                  children: List.generate(
+                                    review['rating'],
+                                    (_) => const Icon(Icons.star,
+                                        size: 14, color: Colors.amber),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(review['description'] ?? ""),
+                          ),
+                        );
+                      },
+                    );
+                  }).toList(),
+                );
+              },
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ---------------- HELPERS ----------------
   Widget _detail(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 6),
       child: Row(
         children: [
-          Text(
-            "$title: ",
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-              color: Colors.black87,
-            ),
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ),
+          Text("$title: ",
+              style: const TextStyle(fontWeight: FontWeight.bold)),
+          Expanded(child: Text(value)),
         ],
       ),
     );
   }
 
   Widget _buildBookImage(Map<String, dynamic> data) {
-    if (kIsWeb &&
-        data['bookCoverImage'] != null &&
-        data['bookCoverImage'].isNotEmpty) {
+    if (kIsWeb && data['bookCoverImage'] != null) {
       return Image.memory(
         base64Decode(data['bookCoverImage']),
         fit: BoxFit.cover,
       );
-    } else if (!kIsWeb &&
-        data['bookCoverImage'] != null &&
-        data['bookCoverImage'].isNotEmpty) {
+    } else if (!kIsWeb && data['bookCoverImage'] != null) {
       return FutureBuilder<File>(
         future: _getImageFile(data['bookCoverImage']),
-        builder: (context, snapshot) {
+        builder: (_, snapshot) {
           if (snapshot.hasData) {
             return Image.file(snapshot.data!, fit: BoxFit.cover);
           }
