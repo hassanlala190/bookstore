@@ -47,6 +47,8 @@ dependencies:
   pdf:
   printing:
   open_filex:
+  excel: 
+  share_plus:
 
 dev_dependencies:
   flutter_test:

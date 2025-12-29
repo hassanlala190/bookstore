@@ -1,5 +1,6 @@
 import 'package:bookstore/admin/admin_order_page.dart';
 import 'package:bookstore/admin/all_users.dart';
+import 'package:bookstore/admin/approved_order.dart';
 import 'package:flutter/material.dart';
 
 // Pages
@@ -32,6 +33,8 @@ class AdminDrawer extends StatelessWidget {
 
             _item(context, Icons.person_add, "Users", AdminUsersPage()),
             _item(context, Icons.people, "User Orders", AdminOrdersPage()),
+            _item(context, Icons.approval, "Approved Orders", ApprovedOrdersPage()),
+
             _divider(),
 
             _item(context, Icons.person_add, "Add Author", AddAuthorPage()),
