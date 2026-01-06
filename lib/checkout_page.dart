@@ -78,61 +78,114 @@ class _CheckoutPageState extends State<CheckoutPage> {
       barrierDismissible: false,
       builder: (BuildContext con) {
         return AlertDialog(
-        title: const Text("Order Confirmed 🎉"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text("Your order has been placed successfully."),
-            const SizedBox(height: 10),
-            Text(
-              "Tracking Number:",
-              style: const TextStyle(fontWeight: FontWeight.bold),
+          title: Text(
+            "Order Confirmed 🎉",
+            style: TextStyle(
+              color: Colors.black87,
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              trackingNo,
-              style: const TextStyle(
-                color: Colors.deepPurple,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Your order has been placed successfully.",
+                style: TextStyle(color: Colors.grey[700]),
+              ),
+              SizedBox(height: 16),
+              Text(
+                "Tracking Number:",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
+              ),
+              SizedBox(height: 4),
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey[200]!),
+                ),
+                child: Text(
+                  trackingNo,
+                  style: TextStyle(
+                    color: Colors.black87,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 12),
+              Text(
+                "You can track your order using this number.",
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(con); // close dialog
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserDashboard()),
+                  (route) => false, // saari previous screens remove
+                );
+              },
+              child: Text(
+                "Continue",
+                style: TextStyle(
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-            const SizedBox(height: 8),
-            const Text("You can track your order using this number."),
           ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-             Navigator.pop(con); // close dialog
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => AttractiveDashboard()),
-      (route) => false, // saari previous screens remove
-    );
-            },
-            child: const Text("OK"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-        ],
-      );
-      }
+        );
+      },
     );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("Checkout"),
-        backgroundColor: Colors.deepPurple,
+        title: Text(
+          "Checkout",
+          style: TextStyle(color: Colors.black87),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: IconThemeData(color: Colors.black87),
+        centerTitle: true,
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
+              Text(
+                "Shipping Details",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 16),
+
               buildField("Full Name", nameCtrl),
               buildField(
                 "Email",
@@ -143,41 +196,113 @@ class _CheckoutPageState extends State<CheckoutPage> {
               buildField("Phone", phoneCtrl, keyboard: TextInputType.phone),
               buildField("Address", addressCtrl, maxLines: 3),
 
-              const SizedBox(height: 20),
+              SizedBox(height: 24),
+
+              Text(
+                "Order Summary",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 12),
 
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.deepPurple.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
+                    ),
+                  ],
                 ),
-                child: Text(
-                  "Total Amount: Rs ${widget.totalAmount.toStringAsFixed(2)}",
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.deepPurple,
-                  ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Items",
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        Text(
+                          "${widget.cartItems.length} items",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 8),
+                    Divider(color: Colors.grey[200]),
+                    SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Total Amount",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          "₹${widget.totalAmount.toStringAsFixed(2)}",
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
 
-              const SizedBox(height: 24),
+              SizedBox(height: 32),
 
-              ElevatedButton(
-                onPressed: loading ? null : confirmOrder,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: loading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text(
-                        "Confirm Order",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: loading ? null : confirmOrder,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black87,
+                    foregroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: loading
+                      ? SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Text(
+                          "Confirm Order",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
+                ),
               ),
             ],
           ),
@@ -194,7 +319,7 @@ class _CheckoutPageState extends State<CheckoutPage> {
     bool readOnly = false,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: ctrl,
         readOnly: readOnly,
@@ -203,8 +328,24 @@ class _CheckoutPageState extends State<CheckoutPage> {
         validator: (v) => v!.isEmpty ? "Required" : null,
         decoration: InputDecoration(
           labelText: label,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          labelStyle: TextStyle(color: Colors.grey[600]),
+          filled: true,
+          fillColor: Colors.white,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.black87, width: 1.5),
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
+        style: TextStyle(color: Colors.black87),
       ),
     );
   }

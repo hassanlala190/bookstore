@@ -1,3 +1,5 @@
+import 'package:bookstore/admin/OrderHistory.dart';
+import 'package:bookstore/admin/TopBooks.dart';
 import 'package:bookstore/admin/admin_login.dart';
 import 'package:bookstore/admin/admin_order_page.dart';
 import 'package:bookstore/admin/all_users.dart';
@@ -68,6 +70,26 @@ class AdminDrawer extends StatelessWidget {
                       "Approved Orders",
                       "Completed orders",
                       ApprovedOrdersPage(),
+                    ),
+                    
+                    _divider(),
+                    
+                    _sectionTitle("ANALYTICS"), // New section for analytics
+                    _item(
+                      context,
+                      Icons.history,
+                      Colors.deepPurple[700]!, // Different color for distinction
+                      "Orders History",
+                      "View all completed/cancelled orders",
+                      OrdersHistoryPage(), // Your OrdersHistoryPage
+                    ),
+                    _item(
+                      context,
+                      Icons.trending_up,
+                      Colors.deepPurple[700]!, // Different color for distinction
+                      "Top Books",
+                      "Most frequently ordered books",
+                      TopBooksPage(), // Your TopBooksPage
                     ),
                     
                     _divider(),

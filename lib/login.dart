@@ -133,7 +133,7 @@ class _LoginPageState extends State<LoginPage> with SingleTickerProviderStateMix
         show_msg("Login Successful");
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (a) => AttractiveDashboard()),
+          MaterialPageRoute(builder: (a) => UserDashboard()),
         );
       }
 

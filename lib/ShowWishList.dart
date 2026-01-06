@@ -16,17 +16,38 @@ class _WishlistPageState extends State<WishlistPage> {
   @override
   Widget build(BuildContext context) {
     if (userId == null) {
-      return const Scaffold(
-        body: Center(child: Text("Please login to view your wishlist")),
+      return Scaffold(
+        backgroundColor: Colors.grey[50],
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.login, size: 80, color: Colors.grey[400]),
+              SizedBox(height: 20),
+              Text(
+                "Please login to view your wishlist",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.grey[600],
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F8),
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("My Wishlist"),
-        backgroundColor: Colors.deepPurple,
-        elevation: 0,
+        title: Text(
+          "My Wishlist",
+          style: TextStyle(color: Colors.black87),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: IconThemeData(color: Colors.black87),
+        centerTitle: true,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -37,7 +58,11 @@ class _WishlistPageState extends State<WishlistPage> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: CircularProgressIndicator(
+                color: Colors.black87,
+              ),
+            );
           }
 
           // ---------- EMPTY UI ----------
@@ -47,30 +72,32 @@ class _WishlistPageState extends State<WishlistPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(28),
+                    padding: EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.deepPurple.withOpacity(0.08),
+                      color: Colors.grey[100],
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.favorite_border,
                       size: 60,
-                      color: Colors.deepPurple,
+                      color: Colors.grey[400],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  const Text(
+                  SizedBox(height: 20),
+                  Text(
                     "Your Wishlist is Empty",
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[600],
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  const Text(
+                  SizedBox(height: 8),
+                  Text(
                     "Save books you love to see them here",
                     style: TextStyle(
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: Colors.grey[500],
                     ),
                   ),
                 ],
@@ -81,7 +108,7 @@ class _WishlistPageState extends State<WishlistPage> {
           final wishlistItems = snapshot.data!.docs;
 
           return ListView.builder(
-            padding: const EdgeInsets.all(14),
+            padding: EdgeInsets.all(16),
             itemCount: wishlistItems.length,
             itemBuilder: (context, index) {
               final doc = wishlistItems[index];
@@ -89,49 +116,56 @@ class _WishlistPageState extends State<WishlistPage> {
               final wishlistId = doc.id;
 
               return Container(
-                margin: const EdgeInsets.only(bottom: 16),
+                margin: EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 8,
+                      offset: Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Row(
                   children: [
                     // ---------- IMAGE ----------
-                    ClipRRect(
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(18),
+                    Container(
+                      width: 100,
+                      height: 140,
+                      decoration: BoxDecoration(
+                        color: Colors.grey[100],
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          bottomLeft: Radius.circular(16),
+                        ),
                       ),
-                      child: SizedBox(
-                        width: 95,
-                        height: 135,
-                        child: item['bookCoverImage'] != null &&
-                                item['bookCoverImage'].isNotEmpty
-                            ? Image.memory(
+                      child: item['bookCoverImage'] != null &&
+                              item['bookCoverImage'].isNotEmpty
+                          ? ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                bottomLeft: Radius.circular(16),
+                              ),
+                              child: Image.memory(
                                 base64Decode(item['bookCoverImage']),
                                 fit: BoxFit.cover,
-                              )
-                            : Container(
-                                color: Colors.grey[200],
-                                child: const Icon(
-                                  Icons.book,
-                                  size: 40,
-                                  color: Colors.grey,
-                                ),
                               ),
-                      ),
+                            )
+                          : Center(
+                              child: Icon(
+                                Icons.book,
+                                size: 40,
+                                color: Colors.grey[400],
+                              ),
+                            ),
                     ),
 
                     // ---------- CONTENT ----------
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.fromLTRB(14, 12, 12, 12),
+                        padding: EdgeInsets.all(12),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -139,24 +173,25 @@ class _WishlistPageState extends State<WishlistPage> {
                               item['bookName'] ?? "No Name",
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 15.5,
+                              style: TextStyle(
+                                fontSize: 15,
                                 fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
                             ),
 
-                            const SizedBox(height: 10),
+                            SizedBox(height: 8),
 
                             Text(
                               "₹${item['bookPrice'] ?? "0"}",
                               style: TextStyle(
-                                fontSize: 16,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.deepPurple.shade700,
+                                color: Colors.black87,
                               ),
                             ),
 
-                            const SizedBox(height: 14),
+                            SizedBox(height: 12),
 
                             Align(
                               alignment: Alignment.bottomRight,
@@ -170,31 +205,36 @@ class _WishlistPageState extends State<WishlistPage> {
                                       .delete();
 
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content:
-                                          Text("Removed from Wishlist"),
+                                    SnackBar(
+                                      content: Text("Removed from Wishlist"),
+                                      backgroundColor: Colors.black87,
                                     ),
                                   );
                                 },
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 6),
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 16, vertical: 8),
                                   decoration: BoxDecoration(
-                                    color: Colors.redAccent.withOpacity(0.1),
+                                    color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.redAccent,
+                                      width: 1,
+                                    ),
                                   ),
-                                  child: const Row(
+                                  child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(
                                         Icons.favorite,
                                         color: Colors.redAccent,
-                                        size: 18,
+                                        size: 16,
                                       ),
                                       SizedBox(width: 6),
                                       Text(
                                         "Remove",
                                         style: TextStyle(
+                                          fontSize: 12,
                                           color: Colors.redAccent,
                                           fontWeight: FontWeight.w600,
                                         ),

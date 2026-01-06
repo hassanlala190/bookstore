@@ -50,6 +50,7 @@ dependencies:
   excel: 
   share_plus:
   cloud_functions:
+  syncfusion_flutter_charts:
 
 dev_dependencies:
   flutter_test:

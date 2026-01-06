@@ -37,58 +37,98 @@ class _CartPageState extends State<CartPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text("My Cart"),
-        backgroundColor: Colors.deepPurple,
-        elevation: 0,
+        title: Text(
+          "My Cart",
+          style: TextStyle(color: Colors.black87),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: IconThemeData(color: Colors.black87),
+        centerTitle: true,
       ),
       body: cartItems.isEmpty
-          ? const Center(
-              child: Text(
-                "Your cart is empty",
-                style: TextStyle(fontSize: 18, color: Colors.grey),
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.shopping_cart_outlined,
+                      size: 80, color: Colors.grey[400]),
+                  SizedBox(height: 20),
+                  Text(
+                    "Your cart is empty",
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Add items to get started",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                ],
               ),
             )
           : Column(
               children: [
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     itemCount: cartItems.length,
                     itemBuilder: (context, index) {
                       final item = cartItems[index];
                       int quantity = item['quantity'] ?? 1;
+                      String uuid = item['uuid'] ?? '';
 
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      return Container(
+                        margin: EdgeInsets.only(bottom: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                         ),
-                        elevation: 4,
-                        shadowColor: Colors.grey.withOpacity(0.3),
                         child: Padding(
-                          padding: const EdgeInsets.all(12),
+                          padding: EdgeInsets.all(12),
                           child: Row(
                             children: [
                               // Book Image
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: item['bookCoverImage'] != null
-                                    ? Image.memory(
-                                        base64Decode(item['bookCoverImage']),
-                                        width: 70,
-                                        height: 100,
-                                        fit: BoxFit.cover,
+                              Container(
+                                width: 80,
+                                height: 110,
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[100],
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: item['bookCoverImage'] != null &&
+                                        (item['bookCoverImage'] as String)
+                                            .isNotEmpty
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Image.memory(
+                                          base64Decode(item['bookCoverImage']),
+                                          width: 80,
+                                          height: 110,
+                                          fit: BoxFit.cover,
+                                        ),
                                       )
-                                    : Container(
-                                        width: 70,
-                                        height: 100,
-                                        color: Colors.grey[300],
-                                        child: const Icon(Icons.book, size: 40, color: Colors.white),
+                                    : Center(
+                                        child: Icon(Icons.book,
+                                            size: 40, color: Colors.grey[400]),
                                       ),
                               ),
 
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
 
                               // Book details & quantity
                               Expanded(
@@ -96,24 +136,25 @@ class _CartPageState extends State<CartPage> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      item['bookName'],
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
+                                      item['bookName'] ?? 'No Name',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.black87,
                                       ),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 6),
+                                    SizedBox(height: 8),
                                     Text(
-                                      "Rs ${item['bookPrice']}",
-                                      style: const TextStyle(
-                                        fontSize: 14,
-                                        color: Colors.deepPurple,
-                                        fontWeight: FontWeight.w600,
+                                      "₹${item['bookPrice']}",
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
                                       ),
                                     ),
-                                    const SizedBox(height: 12),
+                                    SizedBox(height: 12),
                                     // Quantity control
                                     Row(
                                       children: [
@@ -121,47 +162,68 @@ class _CartPageState extends State<CartPage> {
                                         InkWell(
                                           onTap: () async {
                                             if (quantity > 1) {
-                                              await CartService.updateQuantity(item['uuid'], quantity - 1);
+                                              await CartService.updateQuantity(
+                                                  uuid, quantity - 1);
                                               loadCart();
                                             }
                                           },
                                           child: Container(
+                                            padding: EdgeInsets.all(6),
                                             decoration: BoxDecoration(
-                                              color: Colors.deepPurple.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(6),
+                                              color: Colors.grey[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: Colors.grey[300]!,
+                                              ),
                                             ),
-                                            child: const Icon(Icons.remove, color: Colors.deepPurple),
+                                            child: Icon(Icons.remove,
+                                                size: 18, color: Colors.grey[700]),
                                           ),
                                         ),
                                         Padding(
-                                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 16),
                                           child: Text(
                                             '$quantity',
-                                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: Colors.black87,
+                                            ),
                                           ),
                                         ),
                                         // Increment
                                         InkWell(
                                           onTap: () async {
                                             if (quantity < 10) {
-                                              await CartService.updateQuantity(item['uuid'], quantity + 1);
+                                              await CartService.updateQuantity(
+                                                  uuid, quantity + 1);
                                               loadCart();
                                             }
                                           },
                                           child: Container(
+                                            padding: EdgeInsets.all(6),
                                             decoration: BoxDecoration(
-                                              color: Colors.deepPurple.withOpacity(0.1),
-                                              borderRadius: BorderRadius.circular(6),
+                                              color: Colors.grey[100],
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: Colors.grey[300]!,
+                                              ),
                                             ),
-                                            child: const Icon(Icons.add, color: Colors.deepPurple),
+                                            child: Icon(Icons.add,
+                                                size: 18, color: Colors.grey[700]),
                                           ),
                                         ),
-                                        const Spacer(),
+                                        Spacer(),
                                         // Delete
                                         IconButton(
-                                          icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                                          icon: Icon(Icons.delete_outline,
+                                              size: 22, color: Colors.grey[600]),
                                           onPressed: () async {
-                                            await CartService.removeFromCart(index);
+                                            await CartService.removeItemByUuid(
+                                                uuid);
                                             loadCart();
                                           },
                                         ),
@@ -180,66 +242,112 @@ class _CartPageState extends State<CartPage> {
 
                 // Total + Checkout
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(20),
                   decoration: BoxDecoration(
                     color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.grey.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, -3),
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 15,
+                        offset: Offset(0, -5),
                       ),
                     ],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            "Total",
-                            style: TextStyle(fontSize: 14, color: Colors.grey),
-                          ),
-                          const SizedBox(height: 4),
                           Text(
-                            "Rs ${getTotalPrice().toStringAsFixed(2)}",
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+                            "Items",
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          Text(
+                            "${cartItems.length} items",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
                         ],
                       ),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Checkout logic
-                          if (cartItems.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Cart is empty")),
-                            );
-                          } else {
-                            
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => CheckoutPage(
-        cartItems: cartItems,
-        totalAmount: getTotalPrice(),
-      ),
-    ),
-  );
-
-
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.deepPurple,
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text(
-                          "Checkout",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                        ),
+                      SizedBox(height: 8),
+                      Divider(color: Colors.grey[200]),
+                      SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Total",
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              SizedBox(height: 4),
+                              Text(
+                                "₹${getTotalPrice().toStringAsFixed(2)}",
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            width: 150,
+                            child: ElevatedButton(
+                              onPressed: () {
+                                if (cartItems.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text("Cart is empty"),
+                                      backgroundColor: Colors.black87,
+                                    ),
+                                  );
+                                } else {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => CheckoutPage(
+                                        cartItems: cartItems,
+                                        totalAmount: getTotalPrice(),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black87,
+                                foregroundColor: Colors.white,
+                                padding: EdgeInsets.symmetric(vertical: 16),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                "Checkout",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),

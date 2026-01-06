@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:bookstore/drawer.dart';
+import 'package:bookstore/attractive_dashboard.dart';
 import 'package:bookstore/firebase_options.dart';
 import 'package:bookstore/login.dart';
 import 'package:flutter/foundation.dart';
@@ -58,7 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
       stream: FirebaseAuth.instance.authStateChanges(),
      builder: (context, snap){
       if(snap.hasData){
-        return drawer();
+        return UserDashboard();
       }
       else{
         return login();

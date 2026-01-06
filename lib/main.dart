@@ -57,38 +57,86 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late Animation<double> _fadeAnimation;
   late Animation<double> _scaleAnimation;
   late Animation<Offset> _slideAnimation;
+  late Animation<double> _progressAnimation;
+  late Animation<double> _bookRotateAnimation;
 
   @override
   void initState() {
     super.initState();
     
-    // Initialize animations
+    // Initialize animations with 8 seconds duration
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(seconds: 8),
       vsync: this,
     );
     
+    // Logo fade in animation (0-2 seconds)
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.0, 0.5, curve: Curves.easeIn)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.25, curve: Curves.easeInOut),
+      ),
     );
     
-    _scaleAnimation = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.3, 0.8, curve: Curves.elasticOut)),
+    // Logo scale animation (0.5-3 seconds)
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 0.5, end: 1.1),
+        weight: 50,
+      ),
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 1.1, end: 1.0),
+        weight: 50,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.0, 0.375, curve: Curves.easeInOut),
+      ),
     );
     
+    // Book rotation animation (1-4 seconds)
+    _bookRotateAnimation = TweenSequence<double>([
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 0.0, end: 1.0),
+        weight: 50,
+      ),
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 1.0, end: 0.0),
+        weight: 50,
+      ),
+    ]).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.125, 0.5, curve: Curves.easeInOut),
+      ),
+    );
+    
+    // Title slide animation (2-5 seconds)
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.5),
       end: const Offset(0, 0),
     ).animate(
-      CurvedAnimation(parent: _controller, curve: Interval(0.5, 1.0, curve: Curves.easeOut)),
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.25, 0.625, curve: Curves.elasticOut),
+      ),
+    );
+    
+    // Progress bar animation (3-8 seconds)
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Interval(0.375, 1.0, curve: Curves.linear),
+      ),
     );
     
     // Start animations
     _controller.forward();
     
-    // Navigate after 3 seconds
+    // Navigate after 8 seconds
     Timer(
-      const Duration(seconds: 3),
+      const Duration(seconds: 8),
       () {
         Navigator.pushReplacement(
           context,
@@ -123,52 +171,61 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
         ),
         child: Stack(
           children: [
-            // Background Pattern
-            Positioned.fill(
-              child: CustomPaint(
-                painter: _BookPatternPainter(),
-              ),
+            // Animated Background Pattern
+            AnimatedBuilder(
+              animation: _controller,
+              builder: (context, child) {
+                return Opacity(
+                  opacity: _controller.value > 0.1 ? 1.0 : 0.0,
+                  child: CustomPaint(
+                    painter: _BookPatternPainter(animationValue: _controller.value),
+                  ),
+                );
+              },
             ),
             
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo with animation
+                  // Logo with multiple animations
                   FadeTransition(
                     opacity: _fadeAnimation,
                     child: ScaleTransition(
                       scale: _scaleAnimation,
-                      child: Container(
-                        width: 120,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              Colors.black87,
-                              Colors.grey[900]!,
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.3),
-                              blurRadius: 20,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 10),
+                      child: RotationTransition(
+                        turns: _bookRotateAnimation,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black87,
+                                Colors.grey[900]!,
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
                             ),
-                          ],
-                          border: Border.all(
-                            color: Colors.white,
-                            width: 4,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 20,
+                                spreadRadius: 2,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                            border: Border.all(
+                              color: Colors.white,
+                              width: 4,
+                            ),
                           ),
-                        ),
-                        child: const Icon(
-                          Icons.menu_book_rounded,
-                          size: 70,
-                          color: Colors.white,
+                          child: const Icon(
+                            Icons.menu_book_rounded,
+                            size: 70,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
@@ -201,47 +258,22 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                           ),
                         ),
                         const SizedBox(height: 8),
-                        Text(
-                          "Admin Management System",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.grey[700],
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 50),
-                  
-                  // Loading Indicator
-                  Container(
-                    width: 200,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Animated Progress Bar
                         AnimatedBuilder(
                           animation: _controller,
                           builder: (context, child) {
-                            return Container(
-                              width: 200 * _controller.value,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Colors.black87,
-                                    Colors.grey[800]!,
-                                  ],
-                                  begin: Alignment.centerLeft,
-                                  end: Alignment.centerRight,
+                            return Opacity(
+                              opacity: _controller.value > 0.3 ? 1.0 : 0.0,
+                              child: Transform.translate(
+                                offset: Offset(0, _controller.value > 0.3 ? 0 : 10),
+                                child: Text(
+                                  "Admin Management System",
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey[700],
+                                    letterSpacing: 1,
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(2),
                               ),
                             );
                           },
@@ -250,22 +282,151 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     ),
                   ),
                   
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                   
-                  // Loading Text
+                  // Loading Progress Container
+                  Container(
+                    width: 250,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.grey[200]!,
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // Progress Bar
+                        Container(
+                          width: 200,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Stack(
+                            children: [
+                              AnimatedBuilder(
+                                animation: _progressAnimation,
+                                builder: (context, child) {
+                                  return Container(
+                                    width: 200 * _progressAnimation.value,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          Colors.black87,
+                                          Colors.grey[800]!,
+                                        ],
+                                        begin: Alignment.centerLeft,
+                                        end: Alignment.centerRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 15),
+                        
+                        // Loading Text
+                        AnimatedBuilder(
+                          animation: _controller,
+                          builder: (context, child) {
+                            List<String> loadingTexts = [
+                              "Initializing Admin Panel...",
+                              "Loading Database...",
+                              "Configuring Security...",
+                              "Preparing Dashboard...",
+                              "Almost Ready...",
+                              "Launching Admin Portal..."
+                            ];
+                            
+                            int textIndex = (_controller.value * loadingTexts.length).floor();
+                            textIndex = textIndex.clamp(0, loadingTexts.length - 1);
+                            
+                            return Column(
+                              children: [
+                                Text(
+                                  loadingTexts[textIndex],
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  "${(_progressAnimation.value * 100).toInt()}%",
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[500],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 30),
+                  
+                  // Animated Dots
                   AnimatedBuilder(
                     animation: _controller,
                     builder: (context, child) {
-                      return Opacity(
-                        opacity: _controller.value > 0.5 ? 1.0 : 0.0,
-                        child: Text(
-                          "Initializing Admin Panel...",
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                            fontStyle: FontStyle.italic,
+                      double dot1Opacity = _controller.value > 0.4 ? 1.0 : 0.3;
+                      double dot2Opacity = _controller.value > 0.6 ? 1.0 : 0.3;
+                      double dot3Opacity = _controller.value > 0.8 ? 1.0 : 0.3;
+                      
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 10,
+                            height: 10,
+                            margin: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[700]!.withOpacity(dot1Opacity),
+                              shape: BoxShape.circle,
+                            ),
                           ),
-                        ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 10,
+                            height: 10,
+                            margin: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[700]!.withOpacity(dot2Opacity),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            width: 10,
+                            height: 10,
+                            margin: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[700]!.withOpacity(dot3Opacity),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -273,8 +434,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                   const SizedBox(height: 40),
                   
                   // Version Info
-                  Positioned(
-                    bottom: 40,
+                  AnimatedOpacity(
+                    opacity: _controller.value > 0.5 ? 1.0 : 0.0,
+                    duration: const Duration(milliseconds: 500),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 20,
@@ -318,24 +480,45 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               bottom: 20,
               left: 0,
               right: 0,
-              child: Column(
-                children: [
-                  Text(
-                    "© 2024 BookStore Management System",
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[500],
+              child: AnimatedOpacity(
+                opacity: _controller.value > 0.7 ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 500),
+                child: Column(
+                  children: [
+                    Text(
+                      "© 2024 BookStore Management System",
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey[500],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    "Loading Admin Dashboard...",
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey[400],
+                    const SizedBox(height: 4),
+                    AnimatedBuilder(
+                      animation: _controller,
+                      builder: (context, child) {
+                        List<String> footerTexts = [
+                          "Loading System Modules...",
+                          "Establishing Secure Connection...",
+                          "Verifying Admin Credentials...",
+                          "Preparing User Interface...",
+                          "Finalizing Setup...",
+                          "Ready to Launch!"
+                        ];
+                        
+                        int textIndex = (_controller.value * footerTexts.length).floor();
+                        textIndex = textIndex.clamp(0, footerTexts.length - 1);
+                        
+                        return Text(
+                          footerTexts[textIndex],
+                          style: TextStyle(
+                            fontSize: 10,
+                            color: Colors.grey[400],
+                          ),
+                        );
+                      },
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -346,31 +529,43 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 }
 
 class _BookPatternPainter extends CustomPainter {
+  final double animationValue;
+
+  _BookPatternPainter({required this.animationValue});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.grey[100]!
+      ..color = Colors.grey[100]!.withOpacity(0.3 + (animationValue * 0.5))
       ..style = PaintingStyle.stroke
       ..strokeWidth = 0.5;
 
-    // Draw book patterns
+    // Draw animated book patterns
     for (double i = 0; i < size.width; i += 40) {
       for (double j = 0; j < size.height; j += 40) {
-        final rect = Rect.fromLTWH(i, j, 20, 30);
-        canvas.drawRect(rect, paint);
-        
-        // Draw book spine
-        final spineRect = Rect.fromLTWH(i + 18, j, 2, 30);
-        final spinePaint = Paint()
-          ..color = Colors.grey[300]!
-          ..style = PaintingStyle.fill;
-        canvas.drawRect(spineRect, spinePaint);
+        // Animate book appearance based on animation value
+        if ((i/40 + j/40) / ((size.width/40) + (size.height/40)) < animationValue) {
+          final rect = Rect.fromLTWH(
+            i,
+            j + (animationValue * 10 * (i % 3).toDouble()),
+            20,
+            30
+          );
+          canvas.drawRect(rect, paint);
+          
+          // Draw book spine
+          final spineRect = Rect.fromLTWH(i + 18, j, 2, 30);
+          final spinePaint = Paint()
+            ..color = Colors.grey[300]!.withOpacity(0.5 + (animationValue * 0.5))
+            ..style = PaintingStyle.fill;
+          canvas.drawRect(spineRect, spinePaint);
+        }
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
 
 // Keep your original MyHomePage class for reference

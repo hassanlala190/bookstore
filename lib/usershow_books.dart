@@ -1,5 +1,3 @@
-
-
 import 'dart:io';
 import 'dart:convert';
 import 'package:bookstore/BookDetails.dart';
@@ -72,148 +70,144 @@ class _UserShowBooksPageState extends State<UserShowBooksPage> {
     }
   }
   
-//   // Build book card widget
+  // Build book card widget
   Widget _buildBookCard(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     
-    return Card(
-      elevation: 4,
-      margin: EdgeInsets.all(8),
-      child: Container(
-        height: 180,
-        child: Row(
-          children: [
-            // Book Cover Image
-            Container(
-              width: 120,
-              height: 180,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(4),
-                  bottomLeft: Radius.circular(4),
-                ),
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Book Cover Image
+          Container(
+            width: 110,
+            height: 160,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
               ),
-              child: _buildBookImage(data),
             ),
-            
-Expanded(
-  child: Padding(
-    padding: EdgeInsets.all(12),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Book Title (Clickable)
-        InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => BookDetailsPage(data: data, docId: doc.id, ),
-              ),
-            );
-          },
-          child: Text(
-            data['bookName']?.toString() ?? "No Title",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue[800],
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 2,
+            child: _buildBookImage(data),
           ),
-        ),
-        SizedBox(height: 4),
-
-        // Author
-        Text(
-          "Author: ${data['bookAuthor']?.toString() ?? "Unknown"}",
-          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-
-        // Category
-        Text(
-          "Category: ${data['bookCategory']?.toString() ?? "Unknown"}",
-          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-        ),
-
-        // Language
-        Text(
-          "Language: ${data['bookLanguage']?.toString() ?? "English"}",
-          style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-        ),
-        SizedBox(height: 6),
-
-        // Stock Status
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-          decoration: BoxDecoration(
-            color: data['bookStock']?.toString() == "Yes"
-                ? Colors.green[100]
-                : Colors.red[100],
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Text(
-            data['bookStock']?.toString() == "Yes"
-                ? "In Stock"
-                : "Out of Stock",
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: data['bookStock']?.toString() == "Yes"
-                  ? Colors.green[800]
-                  : Colors.red[800],
-            ),
-          ),
-        ),
-
-        Spacer(),
-
-        // Responsive Price + Wishlist Row
-        LayoutBuilder(
-          builder: (context, constraints) {
-            bool smallWidth = constraints.maxWidth < 250;
-
-            return Wrap(
-              alignment: WrapAlignment.spaceBetween,
-              runSpacing: 6,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              children: [
-                // Price
-                Text(
-                  "₹${(data['bookPrice'] as num?)?.toStringAsFixed(2) ?? "0.00"}",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.blue[800],
+          
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Book Title (Clickable)
+                  InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => BookDetailsPage(data: data, docId: doc.id),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      data['bookName']?.toString() ?? "No Title",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 2,
+                    ),
                   ),
-                ),
+                  SizedBox(height: 4),
 
-                // Wishlist Button
-               
-              ],
-            );
-          },
-        ),
-      ],
-    ),
-  ),
-),
+                  // Author
+                  Text(
+                    data['bookAuthor']?.toString() ?? "Unknown Author",
+                    style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                  SizedBox(height: 4),
 
+                  // Category
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      data['bookCategory']?.toString() ?? "General",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey[700],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  SizedBox(height: 6),
 
-
-          ],
-        ),
+                  // Stock Status
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: data['bookStock']?.toString() == "Yes"
+                              ? Colors.green[50]
+                              : Colors.red[50],
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: data['bookStock']?.toString() == "Yes"
+                                ? Colors.green[100]!
+                                : Colors.red[100]!,
+                          ),
+                        ),
+                        child: Text(
+                          data['bookStock']?.toString() == "Yes"
+                              ? "In Stock"
+                              : "Out of Stock",
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: data['bookStock']?.toString() == "Yes"
+                                ? Colors.green[700]
+                                : Colors.red[700],
+                          ),
+                        ),
+                      ),
+                      Spacer(),
+                      // Price
+                      Text(
+                        "₹${(data['bookPrice'] as num?)?.toStringAsFixed(2) ?? "0.00"}",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-
-
- 
 
   // Build book image widget
   Widget _buildBookImage(Map<String, dynamic> data) {
@@ -221,13 +215,13 @@ Expanded(
       try {
         return ClipRRect(
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(4),
-            bottomLeft: Radius.circular(4),
+            topLeft: Radius.circular(16),
+            bottomLeft: Radius.circular(16),
           ),
           child: Image.memory(
             base64Decode(data['bookCoverImage']!),
-            width: 120,
-            height: 180,
+            width: 110,
+            height: 160,
             fit: BoxFit.cover,
           ),
         );
@@ -244,13 +238,13 @@ Expanded(
           if (snapshot.hasData) {
             return ClipRRect(
               borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(4),
-                bottomLeft: Radius.circular(4),
+                topLeft: Radius.circular(16),
+                bottomLeft: Radius.circular(16),
               ),
               child: Image.file(
                 snapshot.data!,
-                width: 120,
-                height: 180,
+                width: 110,
+                height: 160,
                 fit: BoxFit.cover,
               ),
             );
@@ -265,208 +259,351 @@ Expanded(
   
   Widget _buildPlaceholderImage() {
     return Container(
-      width: 120,
-      height: 180,
-      color: Colors.grey[200],
-      child: Icon(Icons.book, size: 50, color: Colors.grey[400]),
+      width: 110,
+      height: 160,
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          bottomLeft: Radius.circular(16),
+        ),
+      ),
+      child: Center(
+        child: Icon(Icons.book, size: 40, color: Colors.grey[400]),
+      ),
     );
   }
   
-  // Show book details dialog
- 
-
-  
-  // Filter dialog
+  // Filter dialog with theme
   void _showFilterDialog() {
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) {
-          return AlertDialog(
-            title: Text("Filter Books"),
-            content: SingleChildScrollView(
+          return Dialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Container(
+              padding: EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Category Filter
-                  Text("Category:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: selectedCategory,
-                    isExpanded: true,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCategory = value!;
-                      });
-                    },
-                    items: categories.map((category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Filter Books",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: Colors.grey[600]),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  Divider(color: Colors.grey[300]),
+                  SizedBox(height: 10),
+                  
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Category Filter
+                          Text("Category", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: selectedCategory,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCategory = value!;
+                                });
+                              },
+                              items: categories.map((category) {
+                                return DropdownMenuItem<String>(
+                                  value: category,
+                                  child: Text(category, style: TextStyle(color: Colors.black87)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Author Filter
+                          Text("Author", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: selectedAuthor,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedAuthor = value!;
+                                });
+                              },
+                              items: authors.map((author) {
+                                return DropdownMenuItem<String>(
+                                  value: author,
+                                  child: Text(author, style: TextStyle(color: Colors.black87)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Language Filter
+                          Text("Language", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: selectedLanguage,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedLanguage = value!;
+                                });
+                              },
+                              items: languages.map((language) {
+                                return DropdownMenuItem<String>(
+                                  value: language,
+                                  child: Text(language, style: TextStyle(color: Colors.black87)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Price Range
+                          Text("Price Range", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextField(
+                                  controller: minPriceController,
+                                  decoration: InputDecoration(
+                                    hintText: "Min",
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.grey[200]!),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text("to", style: TextStyle(color: Colors.grey[600])),
+                              SizedBox(width: 12),
+                              Expanded(
+                                child: TextField(
+                                  controller: maxPriceController,
+                                  decoration: InputDecoration(
+                                    hintText: "Max",
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: Colors.grey[200]!),
+                                    ),
+                                    contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                                  ),
+                                  keyboardType: TextInputType.number,
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            "Leave empty for all prices",
+                            style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                          ),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Sort By
+                          Text("Sort By", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: sortBy,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (value) {
+                                setState(() {
+                                  sortBy = value!;
+                                });
+                              },
+                              items: [
+                                "Newest First",
+                                "Price: Low to High",
+                                "Price: High to Low",
+                                "Title: A to Z",
+                                "Title: Z to A",
+                              ].map((sort) {
+                                return DropdownMenuItem<String>(
+                                  value: sort,
+                                  child: Text(sort, style: TextStyle(color: Colors.black87)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          
+                          SizedBox(height: 16),
+                          
+                          // Stock Filter
+                          Text("Stock Status", style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            color: Colors.black87,
+                          )),
+                          SizedBox(height: 8),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey[200]!),
+                            ),
+                            child: DropdownButton<String>(
+                              value: selectedStock,
+                              isExpanded: true,
+                              underline: SizedBox(),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedStock = value!;
+                                });
+                              },
+                              items: ["All", "In Stock", "Out of Stock"].map((stock) {
+                                return DropdownMenuItem<String>(
+                                  value: stock,
+                                  child: Text(stock, style: TextStyle(color: Colors.black87)),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                   
-                  SizedBox(height: 16),
-                  
-                  // Author Filter
-                  Text("Author:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: selectedAuthor,
-                    isExpanded: true,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedAuthor = value!;
-                      });
-                    },
-                    items: authors.map((author) {
-                      return DropdownMenuItem<String>(
-                        value: author,
-                        child: Text(author),
-                      );
-                    }).toList(),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Language Filter
-                  Text("Language:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: selectedLanguage,
-                    isExpanded: true,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLanguage = value!;
-                      });
-                    },
-                    items: languages.map((language) {
-                      return DropdownMenuItem<String>(
-                        value: language,
-                        child: Text(language),
-                      );
-                    }).toList(),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Price Range - Manual Input
-                  Text("Price Range:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
+                  SizedBox(height: 24),
                   Row(
                     children: [
                       Expanded(
-                        child: TextField(
-                          controller: minPriceController,
-                          decoration: InputDecoration(
-                            labelText: "Min Price",
-                            hintText: "0",
-                            border: OutlineInputBorder(),
+                        child: OutlinedButton(
+                          onPressed: () {
+                            // Reset filters
+                            setState(() {
+                              selectedCategory = "All";
+                              selectedAuthor = "All";
+                              selectedLanguage = "All";
+                              selectedStock = "All";
+                              minPriceController.clear();
+                              maxPriceController.clear();
+                              sortBy = "Newest First";
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            side: BorderSide(color: Colors.grey[300]!),
                           ),
-                          keyboardType: TextInputType.number,
+                          child: Text(
+                            "Reset All",
+                            style: TextStyle(color: Colors.black87),
+                          ),
                         ),
                       ),
-                      SizedBox(width: 8),
-                      Text("to", style: TextStyle(fontSize: 16)),
-                      SizedBox(width: 8),
+                      SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: maxPriceController,
-                          decoration: InputDecoration(
-                            labelText: "Max Price",
-                            hintText: "1000",
-                            border: OutlineInputBorder(),
+                        child: ElevatedButton(
+                          onPressed: () {
+                            this.setState(() {});
+                            Navigator.pop(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.black87,
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
-                          keyboardType: TextInputType.number,
+                          child: Text(
+                            "Apply Filters",
+                            style: TextStyle(fontWeight: FontWeight.w600),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    "Leave empty to show all prices",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Sort By
-                  Text("Sort By:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: sortBy,
-                    isExpanded: true,
-                    onChanged: (value) {
-                      setState(() {
-                        sortBy = value!;
-                      });
-                    },
-                    items: [
-                      "Newest First",
-                      "Price: Low to High",
-                      "Price: High to Low",
-                      "Title: A to Z",
-                      "Title: Z to A",
-                    ].map((sort) {
-                      return DropdownMenuItem<String>(
-                        value: sort,
-                        child: Text(sort),
-                      );
-                    }).toList(),
-                  ),
-                  
-                  SizedBox(height: 16),
-                  
-                  // Stock Filter
-                  Text("Stock Status:", style: TextStyle(fontWeight: FontWeight.bold)),
-                  DropdownButton<String>(
-                    value: selectedStock,
-                    isExpanded: true,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStock = value!;
-                      });
-                    },
-                    items: ["All", "In Stock", "Out of Stock"].map((stock) {
-                      return DropdownMenuItem<String>(
-                        value: stock,
-                        child: Text(stock),
-                      );
-                    }).toList(),
-                  ),
                 ],
               ),
             ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  // Reset filters
-                  setState(() {
-                    selectedCategory = "All";
-                    selectedAuthor = "All";
-                    selectedLanguage = "All";
-                    selectedStock = "All";
-                    minPriceController.clear();
-                    maxPriceController.clear();
-                    sortBy = "Newest First";
-                  });
-                },
-                child: Text("Reset All"),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text("Cancel"),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  // Apply filters
-                  this.setState(() {});
-                  Navigator.pop(context);
-                },
-                style: ButtonStyle(
-                  backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
-                ),
-                child: Text("Apply Filters"),
-              ),
-            ],
           );
         },
       ),
@@ -505,71 +642,76 @@ Expanded(
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.grey[50],
       appBar: AppBar(
-  title: Text("Book Catalog"),
-  actions: [
-    // Cart Icon with badge
-   ValueListenableBuilder<int>(
-  valueListenable: CartService.cartCountNotifier,
-  builder: (context, count, _) {
-    return Stack(
-      alignment: Alignment.topRight,
-      children: [
-        IconButton(
-          icon: const Icon(Icons.shopping_cart),
-          tooltip: "My Cart",
-          onPressed: () async {
-            await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const CartPage()),
-            );
-          },
+        title: Text(
+          "Book Catalog",
+          style: TextStyle(color: Colors.black87),
         ),
-        if (count > 0)
-          Positioned(
-            right: 6,
-            top: 6,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: Colors.red,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              constraints: const BoxConstraints(
-                minWidth: 18,
-                minHeight: 18,
-              ),
-              child: Text(
-                '$count',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
+        backgroundColor: Colors.white,
+        elevation: 1,
+        iconTheme: IconThemeData(color: Colors.black87),
+        actions: [
+          // Cart Icon with badge
+          ValueListenableBuilder<int>(
+            valueListenable: CartService.cartCountNotifier,
+            builder: (context, count, _) {
+              return Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.shopping_cart, color: Colors.black87),
+                    tooltip: "My Cart",
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const CartPage()),
+                      );
+                    },
+                  ),
+                  if (count > 0)
+                    Positioned(
+                      right: 6,
+                      top: 6,
+                      child: Container(
+                        padding: EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        constraints: BoxConstraints(
+                          minWidth: 18,
+                          minHeight: 18,
+                        ),
+                        child: Text(
+                          '$count',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
-      ],
-    );
-  },
-),
-
-
-    // Filter Icon
-    IconButton(
-      icon: Icon(Icons.filter_list),
-      onPressed: _showFilterDialog,
-      tooltip: "Filters",
-    ),
-  ],
-),
-
+          // Filter Icon
+          IconButton(
+            icon: Icon(Icons.filter_list, color: Colors.black87),
+            onPressed: _showFilterDialog,
+            tooltip: "Filters",
+          ),
+        ],
+      ),
       body: Column(
         children: [
           // Search Bar and Price Filter
-          Padding(
-            padding: EdgeInsets.all(12),
+          Container(
+            padding: EdgeInsets.all(16),
+            color: Colors.white,
             child: Column(
               children: [
                 // Main Search Bar
@@ -577,13 +719,18 @@ Expanded(
                   controller: searchController,
                   decoration: InputDecoration(
                     hintText: "Search books by title, author, or category...",
-                    prefixIcon: Icon(Icons.search),
+                    hintStyle: TextStyle(color: Colors.grey[600]),
+                    prefixIcon: Icon(Icons.search, color: Colors.grey[600]),
+                    filled: true,
+                    fillColor: Colors.grey[50],
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
                     ),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                     suffixIcon: searchController.text.isNotEmpty
                         ? IconButton(
-                            icon: Icon(Icons.clear),
+                            icon: Icon(Icons.clear, color: Colors.grey[600]),
                             onPressed: () {
                               searchController.clear();
                               setState(() {});
@@ -591,6 +738,7 @@ Expanded(
                           )
                         : null,
                   ),
+                  style: TextStyle(color: Colors.black87),
                   onChanged: (value) {
                     setState(() {});
                   },
@@ -606,27 +754,41 @@ Expanded(
                         controller: minPriceController,
                         decoration: InputDecoration(
                           hintText: "Min Price",
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          hintStyle: TextStyle(color: Colors.grey[600]),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
                         keyboardType: TextInputType.number,
+                        style: TextStyle(color: Colors.black87),
                         onChanged: (value) {
                           setState(() {});
                         },
                       ),
                     ),
-                    SizedBox(width: 8),
-                    Text("to", style: TextStyle(fontSize: 14)),
-                    SizedBox(width: 8),
+                    SizedBox(width: 12),
+                    Text("to", style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                    SizedBox(width: 12),
                     Expanded(
                       child: TextField(
                         controller: maxPriceController,
                         decoration: InputDecoration(
                           hintText: "Max Price",
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          hintStyle: TextStyle(color: Colors.grey[600]),
+                          filled: true,
+                          fillColor: Colors.grey[50],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         ),
                         keyboardType: TextInputType.number,
+                        style: TextStyle(color: Colors.black87),
                         onChanged: (value) {
                           setState(() {});
                         },
@@ -635,13 +797,19 @@ Expanded(
                     SizedBox(width: 8),
                     Tooltip(
                       message: "Clear price filters",
-                      child: IconButton(
-                        icon: Icon(Icons.clear),
-                        onPressed: () {
-                          minPriceController.clear();
-                          maxPriceController.clear();
-                          setState(() {});
-                        },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[100],
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: IconButton(
+                          icon: Icon(Icons.clear, color: Colors.grey[600], size: 20),
+                          onPressed: () {
+                            minPriceController.clear();
+                            maxPriceController.clear();
+                            setState(() {});
+                          },
+                        ),
                       ),
                     ),
                   ],
@@ -650,18 +818,26 @@ Expanded(
             ),
           ),
           
-          // Active Filters Info
+          // Active Filters Info (without heading)
           _buildActiveFiltersInfo(),
           
           // Books List
           Expanded(
             child: _isLoading
-                ? Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: CircularProgressIndicator(
+                      color: Colors.black87,
+                    ),
+                  )
                 : StreamBuilder<QuerySnapshot>(
                     stream: booksStream,
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black87,
+                          ),
+                        );
                       }
                       
                       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -669,18 +845,21 @@ Expanded(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.book, size: 80, color: Colors.grey),
+                              Icon(Icons.book, size: 80, color: Colors.grey[400]),
                               SizedBox(height: 16),
                               Text(
                                 "No books found",
-                                style: TextStyle(fontSize: 18, color: Colors.grey),
+                                style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                               ),
                               if (selectedCategory != "All" || 
                                   selectedAuthor != "All" || 
                                   selectedLanguage != "All")
-                                Text(
-                                  "Try changing your filters",
-                                  style: TextStyle(color: Colors.grey[600]),
+                                Padding(
+                                  padding: EdgeInsets.only(top: 8),
+                                  child: Text(
+                                    "Try changing your filters",
+                                    style: TextStyle(color: Colors.grey[500]),
+                                  ),
                                 ),
                             ],
                           ),
@@ -790,13 +969,13 @@ Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.search_off, size: 80, color: Colors.grey),
+                                  Icon(Icons.search_off, size: 80, color: Colors.grey[400]),
                                   SizedBox(height: 16),
                                   Text(
                                     "No books match your filters",
-                                    style: TextStyle(fontSize: 18, color: Colors.grey),
+                                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                                   ),
-                                  SizedBox(height: 8),
+                                  SizedBox(height: 16),
                                   ElevatedButton(
                                     onPressed: () {
                                       // Reset all filters
@@ -810,7 +989,18 @@ Expanded(
                                       sortBy = "Newest First";
                                       setState(() {});
                                     },
-                                    child: Text("Reset All Filters"),
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.black87,
+                                      foregroundColor: Colors.white,
+                                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "Reset All Filters",
+                                      style: TextStyle(fontWeight: FontWeight.w600),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -863,27 +1053,25 @@ Expanded(
     if (activeFilters.isEmpty) return Container();
     
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: Colors.blue[50],
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            "Active Filters:",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          SizedBox(height: 4),
-          Wrap(
-            spacing: 8,
-            runSpacing: 4,
-            children: activeFilters.map((filter) {
-              return Chip(
-                label: Text(filter, style: TextStyle(fontSize: 11)),
-                backgroundColor: Colors.blue[100],
-              );
-            }).toList(),
-          ),
-        ],
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12), // Removed top padding
+      color: Colors.grey[50],
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: activeFilters.map((filter) {
+          return Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.grey[200]!),
+            ),
+            child: Text(
+              filter,
+              style: TextStyle(fontSize: 11, color: Colors.grey[700]),
+            ),
+          );
+        }).toList(),
       ),
     );
   }

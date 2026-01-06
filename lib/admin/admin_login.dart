@@ -1,4 +1,5 @@
 import 'package:bookstore/admin/admin_dashboard.dart';
+import 'package:bookstore/dashboard.dart';
 import 'package:bookstore/login.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -355,7 +356,7 @@ class _AdminLoginPageState extends State<AdminLoginPage> {
                             onPressed: () {
                               Navigator.push(
                                 context,
-                                MaterialPageRoute(builder: (_) => login()),
+                                MaterialPageRoute(builder: (_) => dash()),
                               );
                             },
                             style: TextButton.styleFrom(
