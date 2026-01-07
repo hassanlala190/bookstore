@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class WishlistPage extends StatefulWidget {
@@ -65,7 +66,6 @@ class _WishlistPageState extends State<WishlistPage> {
             );
           }
 
-          // ---------- EMPTY UI ----------
           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(
               child: Column(
@@ -87,17 +87,15 @@ class _WishlistPageState extends State<WishlistPage> {
                   Text(
                     "Your Wishlist is Empty",
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[600],
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     "Save books you love to see them here",
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
+                      color: Colors.grey,
                     ),
                   ),
                 ],
@@ -131,33 +129,26 @@ class _WishlistPageState extends State<WishlistPage> {
                 child: Row(
                   children: [
                     // ---------- IMAGE ----------
-                    Container(
-                      width: 100,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(16),
-                          bottomLeft: Radius.circular(16),
-                        ),
+                    ClipRRect(
+                      borderRadius: const BorderRadius.horizontal(
+                        left: Radius.circular(18),
                       ),
-                      child: item['bookCoverImage'] != null &&
-                              item['bookCoverImage'].isNotEmpty
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                bottomLeft: Radius.circular(16),
-                              ),
-                              child: Image.memory(
+                      child: SizedBox(
+                        width: 95,
+                        height: 135,
+                        child: item['bookCoverImage'] != null &&
+                                item['bookCoverImage'].isNotEmpty
+                            ? Image.memory(
                                 base64Decode(item['bookCoverImage']),
                                 fit: BoxFit.cover,
-                              ),
-                            )
-                          : Center(
-                              child: Icon(
-                                Icons.book,
-                                size: 40,
-                                color: Colors.grey[400],
+                              )
+                            : Container(
+                                color: Colors.grey[200],
+                                child: const Icon(
+                                  Icons.book,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ),
                               ),
                             ),
                     ),
@@ -173,14 +164,13 @@ class _WishlistPageState extends State<WishlistPage> {
                               item['bookName'] ?? "No Name",
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 15,
+                              style: const TextStyle(
+                                fontSize: 15.5,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
                               ),
                             ),
 
-                            SizedBox(height: 8),
+                            const SizedBox(height: 10),
 
                             Text(
                               "₹${item['bookPrice'] ?? "0"}",
@@ -191,7 +181,7 @@ class _WishlistPageState extends State<WishlistPage> {
                               ),
                             ),
 
-                            SizedBox(height: 12),
+                            const SizedBox(height: 14),
 
                             Align(
                               alignment: Alignment.bottomRight,
@@ -204,16 +194,17 @@ class _WishlistPageState extends State<WishlistPage> {
                                       .doc(wishlistId)
                                       .delete();
 
+                                  if (!mounted) return;
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text("Removed from Wishlist"),
-                                      backgroundColor: Colors.black87,
+                                    const SnackBar(
+                                      content:
+                                          Text("Removed from Wishlist"),
                                     ),
                                   );
                                 },
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 6),
                                   decoration: BoxDecoration(
                                     color: Colors.white,
                                     borderRadius: BorderRadius.circular(20),
@@ -228,13 +219,12 @@ class _WishlistPageState extends State<WishlistPage> {
                                       Icon(
                                         Icons.favorite,
                                         color: Colors.redAccent,
-                                        size: 16,
+                                        size: 18,
                                       ),
                                       SizedBox(width: 6),
                                       Text(
                                         "Remove",
                                         style: TextStyle(
-                                          fontSize: 12,
                                           color: Colors.redAccent,
                                           fontWeight: FontWeight.w600,
                                         ),
